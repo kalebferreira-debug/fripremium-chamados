@@ -192,10 +192,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)
   <div id="fAbrir" class="card">
     <h2>Abrir chamado</h2>
     <div id="carregandoOp" class="hint" style="margin-bottom:12px;"><span class="spin dk"></span>Carregando opções…</div>
-    <div class="row">
-      <div class="f"><label for="aNome">Seu nome <span class="req">*</span></label><input type="text" id="aNome" maxlength="80" autocomplete="name"></div>
-      <div class="f"><label for="aSetor">Seu setor <span class="req">*</span></label><select id="aSetor"></select></div>
-    </div>
+    <div class="f"><label for="aNome">Seu nome <span class="req">*</span></label><input type="text" id="aNome" maxlength="80" autocomplete="name"></div>
     <div class="f" id="wDestino"><label for="aDestino">Área responsável <span class="req">*</span></label><select id="aDestino"></select></div>
     <div class="row">
       <div class="f"><label for="aLocal">Local do problema <span class="req">*</span></label><select id="aLocal"></select></div>
@@ -377,7 +374,6 @@ function carregarOpcoes(){
     g('carregandoOp').style.display='none';
     if(!r.ok){ toast(r.erro||'Erro ao carregar opções.'); return; }
     OP=r;
-    preencher(g('aSetor'),r.setores,'Selecione…');
     preencher(g('aLocal'),r.setores,'Selecione…');
     preencher(g('aDestino'),r.destinos,r.destinos.length>1?'Selecione…':'');
     g('wDestino').style.display = r.destinos.length>1 ? '' : 'none';
@@ -418,15 +414,14 @@ g('aFoto').addEventListener('change',function(){
 
 g('btnAbrir').addEventListener('click',function(){
   var btn=this;
-  ['aNome','aSetor','aLocal','aCat','aDesc','aDestino'].forEach(function(i){ g(i).classList.remove('erro'); });
+  ['aNome','aLocal','aCat','aDesc','aDestino'].forEach(function(i){ g(i).classList.remove('erro'); });
   g('aUrg').classList.remove('erro');
   var urg=document.querySelector('input[name=urg]:checked');
-  var d={acao:'abrir',nome:g('aNome').value.trim(),setor:g('aSetor').value,destino:g('aDestino').value,
+  var d={acao:'abrir',nome:g('aNome').value.trim(),destino:g('aDestino').value,
     local:g('aLocal').value,detalheLocal:g('aDetalhe').value.trim(),categoria:g('aCat').value,
     urgencia:urg?urg.value:'',descricao:g('aDesc').value.trim(),foto:FOTO};
   var falt=[];
   if(d.nome.length<3){ g('aNome').classList.add('erro'); falt.push('nome'); }
-  if(!d.setor){ g('aSetor').classList.add('erro'); falt.push('setor'); }
   if(!d.destino){ g('aDestino').classList.add('erro'); falt.push('área responsável'); }
   if(!d.local){ g('aLocal').classList.add('erro'); falt.push('local'); }
   if(!d.categoria){ g('aCat').classList.add('erro'); falt.push('categoria'); }
@@ -445,7 +440,7 @@ g('btnAbrir').addEventListener('click',function(){
     window.scrollTo(0,0);
   }).catch(function(e){ carregando(btn,false); falhaRede(e); });
 });
-['aNome','aSetor','aLocal','aCat','aDesc','aDestino'].forEach(function(i){
+['aNome','aLocal','aCat','aDesc','aDestino'].forEach(function(i){
   ['input','change'].forEach(function(ev){ g(i).addEventListener(ev,function(){ this.classList.remove('erro'); }); });
 });
 document.querySelectorAll('input[name=urg]').forEach(function(r){ r.addEventListener('change',function(){ g('aUrg').classList.remove('erro'); }); });
@@ -628,7 +623,7 @@ function renderLista(){
       (atrasado(c)?'<span class="chip atr">Fora do prazo</span>':'')+(c.temFoto?'<span class="chip" style="background:#f1f5f9;color:#374151">📷 foto</span>':'')+
       '<span class="it-age">'+idade+'</span></div>'+
       '<div class="it-desc">'+esc(c.descricao)+'</div>'+
-      '<div class="it-meta">'+esc(c.categoria)+' · '+esc(c.local)+(c.detalheLocal?' ('+esc(c.detalheLocal)+')':'')+' · por '+esc(c.solicitante)+' — '+esc(c.setorSolicitante)+' · '+fData(c.dataAbertura)+'</div></div>';
+      '<div class="it-meta">'+esc(c.categoria)+' · '+esc(c.local)+(c.detalheLocal?' ('+esc(c.detalheLocal)+')':'')+' · por '+esc(c.solicitante)+(c.setorSolicitante?' — '+esc(c.setorSolicitante):'')+' · '+fData(c.dataAbertura)+'</div></div>';
   }).join('');
   g('lItens').querySelectorAll('.it').forEach(function(el){ el.addEventListener('click',function(){ abrirDetalhe(el.dataset.p); }); });
 }
@@ -640,7 +635,7 @@ function abrirDetalhe(p){
   var h='<button class="mclose" id="mX" aria-label="Fechar">×</button>';
   h+='<div class="it-top" style="padding-right:30px"><span class="it-prot" style="font-size:1.15rem">'+esc(c.protocolo)+'</span>'+chipUr(c.urgencia)+chipSt(c.status)+(atrasado(c)?'<span class="chip atr">Fora do prazo</span>':'')+'</div>';
   h+='<dl class="kv" style="margin-top:14px;">';
-  h+='<dt>Solicitante</dt><dd>'+esc(c.solicitante)+' — '+esc(c.setorSolicitante)+'</dd>';
+  h+='<dt>Solicitante</dt><dd>'+esc(c.solicitante)+(c.setorSolicitante?' — '+esc(c.setorSolicitante):'')+'</dd>';
   h+='<dt>Local</dt><dd>'+esc(c.local)+(c.detalheLocal?' — '+esc(c.detalheLocal):'')+'</dd>';
   h+='<dt>Categoria</dt><dd>'+esc(c.categoria)+(USU.area==='*'?' · '+esc(c.areaDestino):'')+'</dd>';
   h+='<dt>Aberto em</dt><dd>'+fData(c.dataAbertura)+'</dd>';

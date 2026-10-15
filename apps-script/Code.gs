@@ -71,7 +71,7 @@ function setup() {
 
   criarAba_(ss, ABA.LOCAIS, ['Setor', 'Ativo'], [
     ['Administrativo', 'Sim'], ['Recepção / Portaria', 'Sim'], ['Recebimento', 'Sim'],
-    ['Abate', 'Sim'], ['Desossa', 'Sim'], ['Câmaras frias', 'Sim'], ['Embalagem', 'Sim'],
+    ['Desossa', 'Sim'], ['Câmaras frias', 'Sim'], ['Embalagem', 'Sim'],
     ['Expedição / Carregamento', 'Sim'], ['Almoxarifado', 'Sim'], ['Refeitório', 'Sim'],
     ['Vestiários / Banheiros', 'Sim'], ['Área externa / Pátio', 'Sim'], ['Outro', 'Sim']
   ]);
@@ -191,12 +191,12 @@ function abrir_(r) {
   var descricao = limpa_(r.descricao, 2000);
 
   if (!nome || nome.length < 3) throw new Error('Informe seu nome.');
-  if (!setor) throw new Error('Informe o seu setor.');
   if (!local) throw new Error('Informe o local do problema.');
   if (!descricao || descricao.length < 10) throw new Error('Descreva o problema (mínimo 10 caracteres).');
 
   var op = opcoes_();
-  if (op.setores.indexOf(setor) < 0 || op.setores.indexOf(local) < 0) throw new Error('Setor ou local inválido.');
+  if (op.setores.indexOf(local) < 0) throw new Error('Local inválido.');
+  if (setor && op.setores.indexOf(setor) < 0) setor = '';
   if (op.destinos.indexOf(destino) < 0) throw new Error('Área responsável inválida.');
   if ((op.categorias[destino] || []).indexOf(categoria) < 0) throw new Error('Categoria inválida.');
   if (URGENCIAS.indexOf(urgencia) < 0) throw new Error('Urgência inválida.');
