@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FriPremium — Chamados</title>
+<link rel="icon" href="logo.png">
+<style>
+:root{--primary:#c8102e;--bg:#f4f6f9;--card:#fff;--text:#1e2530;--muted:#6b7280;--border:#d1d5db;--green:#166534;--gbg:#dcfce7;--yellow:#854d0e;--ybg:#fef9c3;--orange:#92400e;--obg:#fff7ed;--red:#dc2626;--r:10px;--sh:0 2px 12px rgba(0,0,0,.1);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+header{background:#fff;color:var(--primary);padding:14px 24px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.15);position:relative;border-bottom:3px solid var(--primary);text-align:center;}
+.hlogo{height:46px;width:auto;object-fit:contain;display:none;}
+.htitle{font-size:1.25rem;font-weight:700;}
+.hsub{font-size:.82rem;color:var(--muted);}
+#hu{position:absolute;right:16px;top:50%;transform:translateY(-50%);display:none;align-items:center;gap:8px;}
+#huNome{font-size:.8rem;background:var(--primary);color:#fff;padding:5px 12px;border-radius:20px;}
+.sc{display:none;max-width:740px;margin:28px auto;padding:0 16px;}
+.sc.on{display:block;}
+.sc.wide{max-width:1120px;}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:24px 22px;margin-bottom:18px;}
+.card h2{font-size:1.1rem;color:var(--primary);margin-bottom:16px;}
+.card h3{font-size:.95rem;margin-bottom:12px;}
+label{display:block;font-size:.88rem;font-weight:600;margin-bottom:6px;}
+label .req{color:var(--primary);}
+.f{margin-bottom:16px;}
+input[type=text],input[type=password],input[type=tel],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:1rem;font-family:inherit;background:#fff;color:var(--text);}
+textarea{min-height:110px;resize:vertical;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);}
+.erro{border-color:var(--red)!important;background:#fff1f1!important;}
+.hint{font-size:.8rem;color:var(--muted);margin-top:5px;}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 24px;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:filter .15s,opacity .15s;}
+.btn:hover{filter:brightness(.94);}
+.btn:disabled{opacity:.55;cursor:not-allowed;}
+.bp{background:var(--primary);color:#fff;width:100%;margin-top:6px;}
+.bs{background:#374151;color:#fff;}
+.bo{background:transparent;color:var(--primary);border:2px solid var(--primary);}
+.sm{padding:6px 14px;font-size:.84rem;}
+.lnk{background:none;border:none;color:var(--muted);font-size:.84rem;cursor:pointer;text-decoration:underline;font-family:inherit;}
+.spin{display:inline-block;width:17px;height:17px;border:3px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;margin-right:8px;}
+.spin.dk{border-color:rgba(200,16,46,.2);border-top-color:var(--primary);}
+@keyframes sp{to{transform:rotate(360deg);}}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e2530;color:#fff;padding:11px 22px;border-radius:8px;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .3s;z-index:1000;max-width:92vw;text-align:center;}
+#toast.on{opacity:1;}
+
+/* Abas */
+.tabs{display:flex;gap:6px;background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:6px;margin-bottom:18px;}
+.tab{flex:1;padding:10px 12px;border:none;background:transparent;border-radius:7px;font-size:.92rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;}
+.tab.on{background:var(--primary);color:#fff;}
+.foot{text-align:center;margin:8px 0 30px;}
+
+/* Urgência */
+.urg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.urg label{border:1.5px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;font-weight:400;margin:0;display:block;transition:all .15s;}
+.urg label b{display:block;font-size:.92rem;margin-bottom:3px;}
+.urg label span{font-size:.78rem;color:var(--muted);line-height:1.35;display:block;}
+.urg input{display:none;}
+.urg input:checked+label{border-color:var(--primary);background:#fff0f2;}
+.urg input:checked+label b{color:var(--primary);}
+.urg.erro label{border-color:var(--red);}
+
+/* Foto */
+.foto-box{border:1.5px dashed var(--border);border-radius:8px;padding:14px;text-align:center;}
+.foto-box img{max-width:100%;max-height:220px;border-radius:6px;display:block;margin:0 auto 10px;}
+
+/* Protocolo */
+.prot{font-size:2rem;font-weight:800;color:var(--primary);letter-spacing:.04em;text-align:center;margin:10px 0 6px;font-family:Consolas,'Courier New',monospace;}
+.okic{width:58px;height:58px;border-radius:50%;background:var(--gbg);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 12px;font-weight:700;}
+
+/* Chips */
+.chip{display:inline-block;font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:12px;white-space:nowrap;}
+.st-Aberto{background:#e5e7eb;color:#1e2530;}
+.st-Em{background:var(--ybg);color:var(--yellow);}
+.st-Aguardando{background:var(--obg);color:var(--orange);border:1px solid #fed7aa;}
+.st-Resolvido{background:var(--gbg);color:var(--green);}
+.st-Cancelado{background:#f1f5f9;color:var(--muted);text-decoration:line-through;}
+.ur-Crítica{background:var(--primary);color:#fff;}
+.ur-Alta{background:#f97316;color:#fff;}
+.ur-Normal{background:#e5e7eb;color:#374151;}
+.atr{background:#fff1f1;color:var(--red);border:1px solid #fca5a5;}
+
+/* Detalhe público */
+.kv{display:grid;grid-template-columns:150px 1fr;gap:8px 14px;font-size:.9rem;}
+.kv dt{color:var(--muted);}
+.kv dd{word-break:break-word;}
+.tl{list-style:none;margin-top:6px;border-left:2px solid var(--border);padding-left:16px;}
+.tl li{position:relative;padding:0 0 14px;font-size:.86rem;}
+.tl li:before{content:'';position:absolute;left:-22px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--primary);}
+.tl small{color:var(--muted);display:block;}
+.tl .cm{background:#f8fafc;border-radius:6px;padding:7px 10px;margin-top:4px;color:#374151;white-space:pre-wrap;}
+
+/* Lista de chamados */
+.filtros{display:grid;grid-template-columns:1.2fr 1fr 1fr 1.6fr;gap:10px;margin-bottom:6px;}
+.filtros select,.filtros input{padding:9px 11px;font-size:.88rem;}
+.cont{font-size:.82rem;color:var(--muted);margin:10px 2px;}
+.it{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:14px 16px;margin-bottom:10px;cursor:pointer;border-left:4px solid #e5e7eb;transition:transform .1s;}
+.it:hover{transform:translateY(-1px);}
+.it.u-Crítica{border-left-color:var(--primary);}
+.it.u-Alta{border-left-color:#f97316;}
+.it-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+.it-prot{font-family:Consolas,'Courier New',monospace;font-weight:700;font-size:.9rem;}
+.it-age{margin-left:auto;font-size:.78rem;color:var(--muted);}
+.it-desc{font-size:.9rem;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.it-meta{font-size:.78rem;color:var(--muted);}
+.vazio{text-align:center;color:var(--muted);padding:40px 10px;font-size:.92rem;}
+
+/* Modal */
+#modal{position:fixed;inset:0;background:rgba(30,37,48,.55);display:none;align-items:flex-start;justify-content:center;z-index:900;overflow-y:auto;padding:30px 12px;}
+#modal.on{display:flex;}
+.mbox{background:#fff;border-radius:var(--r);max-width:720px;width:100%;padding:22px;position:relative;box-shadow:0 10px 40px rgba(0,0,0,.25);}
+.mclose{position:absolute;right:14px;top:12px;background:none;border:none;font-size:1.6rem;color:var(--muted);cursor:pointer;line-height:1;}
+.msec{border-top:1px solid var(--border);margin-top:18px;padding-top:16px;}
+.msec h4{font-size:.85rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:10px;}
+.desc-box{background:#f8fafc;border-radius:8px;padding:12px 14px;font-size:.92rem;white-space:pre-wrap;word-break:break-word;}
+.upd{background:#fff7f8;border:1.5px solid #fecdd3;border-radius:8px;padding:14px;}
+#mFoto img{max-width:100%;border-radius:8px;margin-top:8px;}
+
+/* Painel */
+.ptop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.ptop select{width:auto;padding:8px 11px;font-size:.88rem;}
+.ptop .lbl{font-size:.85rem;font-weight:600;}
+.backlog{background:#1e2530;color:#fff;border-radius:var(--r);padding:14px 18px;margin-bottom:16px;display:flex;gap:26px;flex-wrap:wrap;align-items:center;font-size:.88rem;}
+.backlog b{font-size:1.35rem;margin-right:5px;}
+.backlog .t{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;opacity:.7;width:100%;margin-bottom:-14px;}
+.backlog .crit b{color:#fda4af;}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px;}
+.kpi{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:16px 14px;}
+.kpi .v{font-size:1.7rem;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;}
+.kpi .l{font-size:.78rem;color:var(--muted);margin-top:4px;}
+.kpi .s{font-size:.72rem;color:var(--muted);margin-top:2px;}
+.kpi.pri .v{color:var(--primary);}
+.kpi.ok .v{color:var(--green);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.bars{display:flex;flex-direction:column;gap:9px;}
+.bar{display:grid;grid-template-columns:150px 1fr 38px;align-items:center;gap:10px;font-size:.84rem;}
+.bar .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bar .tr{height:14px;background:#f1f5f9;border-radius:4px;overflow:hidden;}
+.bar .fl{height:100%;border-radius:4px;background:var(--primary);}
+.bar .q{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;}
+.mes{display:flex;align-items:flex-end;gap:14px;height:180px;padding:0 4px;border-bottom:1px solid var(--border);}
+.mes .g{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;}
+.mes .cols{display:flex;align-items:flex-end;gap:3px;height:100%;width:100%;justify-content:center;}
+.mes .c{width:42%;max-width:26px;border-radius:4px 4px 0 0;position:relative;min-height:2px;}
+.mes .c i{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-style:normal;font-size:.7rem;font-weight:700;color:#374151;}
+.mes-lb{display:flex;gap:14px;padding:6px 4px 0;}
+.mes-lb span{flex:1;text-align:center;font-size:.74rem;color:var(--muted);}
+.leg{display:flex;gap:16px;font-size:.78rem;color:var(--muted);margin-bottom:22px;}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;}
+.gt{width:100%;border-collapse:collapse;font-size:.84rem;}
+.gt th{background:var(--primary);color:#fff;padding:8px 10px;text-align:left;font-size:.76rem;font-weight:600;}
+.gt td{padding:8px 10px;border-bottom:1px solid var(--border);}
+.gt tr{cursor:pointer;}
+.gt tbody tr:hover td{background:#fff5f6;}
+
+@media(max-width:900px){.kpis{grid-template-columns:repeat(3,1fr);}.grid2{grid-template-columns:1fr;}.filtros{grid-template-columns:1fr 1fr;}}
+@media(max-width:560px){
+  .row{grid-template-columns:1fr;}
+  .urg{grid-template-columns:1fr;}
+  .kpis{grid-template-columns:1fr 1fr;}
+  .kv{grid-template-columns:1fr;gap:2px;}
+  .kv dd{margin-bottom:8px;}
+  .bar{grid-template-columns:100px 1fr 32px;}
+  .card{padding:18px 15px;}
+  header{justify-content:flex-start;}
+  #hu{right:10px;}
+  #huNome{display:none;}
+  .mes{gap:6px;}
+  .mes-lb{gap:6px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;flex-direction:column;align-items:center;">
+    <img src="logo.png" alt="FriPremium" class="hlogo" onload="this.style.display='block';document.getElementById('htxt').style.display='none';">
+    <div id="htxt" class="htitle">Frigorífico FriPremium</div>
+    <div class="hsub">Sistema de Chamados</div>
+  </div>
+  <div id="hu"><span id="huNome"></span><button class="btn sm" id="btnSair" style="background:#c8102e;color:#fff;">Sair</button></div>
+</header>
+
+<!-- ============ ÁREA PÚBLICA ============ -->
+<div id="sPub" class="sc on">
+  <div class="tabs">
+    <button class="tab on" data-pub="fAbrir">Abrir chamado</button>
+    <button class="tab" data-pub="fConsultar">Consultar protocolo</button>
+  </div>
+
+  <!-- Abrir -->
+  <div id="fAbrir" class="card">
+    <h2>Abrir chamado</h2>
+    <div id="carregandoOp" class="hint" style="margin-bottom:12px;"><span class="spin dk"></span>Carregando opções…</div>
+    <div class="row">
+      <div class="f"><label for="aNome">Seu nome <span class="req">*</span></label><input type="text" id="aNome" maxlength="80" autocomplete="name"></div>
+      <div class="f"><label for="aSetor">Seu setor <span class="req">*</span></label><select id="aSetor"></select></div>
+    </div>
+    <div class="f" id="wDestino"><label for="aDestino">Área responsável <span class="req">*</span></label><select id="aDestino"></select></div>
+    <div class="row">
+      <div class="f"><label for="aLocal">Local do problema <span class="req">*</span></label><select id="aLocal"></select></div>
+      <div class="f"><label for="aDetalhe">Ponto exato</label><input type="text" id="aDetalhe" maxlength="120" placeholder="Ex.: câmara 2, porta lateral"></div>
+    </div>
+    <div class="f"><label for="aCat">Categoria <span class="req">*</span></label><select id="aCat"></select></div>
+    <div class="f">
+      <label>Urgência <span class="req">*</span></label>
+      <div class="urg" id="aUrg">
+        <input type="radio" name="urg" id="u1" value="Crítica"><label for="u1"><b>Crítica</b><span>Risco à segurança das pessoas ou dos alimentos, ou produção parada</span></label>
+        <input type="radio" name="urg" id="u2" value="Alta"><label for="u2"><b>Alta</b><span>Compromete a operação, mas existe contorno</span></label>
+        <input type="radio" name="urg" id="u3" value="Normal"><label for="u3"><b>Normal</b><span>Predial, conforto e pequenos reparos</span></label>
+      </div>
+    </div>
+    <div class="f"><label for="aDesc">Descrição do problema <span class="req">*</span></label><textarea id="aDesc" maxlength="2000" placeholder="O que está acontecendo? Desde quando?"></textarea></div>
+    <div class="f">
+      <label>Foto <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
+      <div class="foto-box">
+        <img id="aFotoPrev" alt="" style="display:none">
+        <input type="file" id="aFoto" accept="image/*" style="display:none">
+        <button class="btn bo sm" id="btnFoto" type="button">Adicionar foto</button>
+        <button class="lnk" id="btnFotoRm" type="button" style="display:none;margin-left:10px;">Remover</button>
+      </div>
+    </div>
+    <button class="btn bp" id="btnAbrir">Enviar chamado</button>
+  </div>
+
+  <!-- Sucesso -->
+  <div id="fOk" class="card" style="display:none;text-align:center;">
+    <div class="okic">✓</div>
+    <h2 style="margin-bottom:4px;">Chamado registrado</h2>
+    <p class="hint" style="font-size:.9rem;">Anote o número do protocolo para acompanhar o andamento.</p>
+    <div class="prot" id="okProt"></div>
+    <button class="btn bs sm" id="btnCopiar" style="margin-bottom:18px;">Copiar protocolo</button>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn bo" id="btnNovo">Abrir outro chamado</button>
+      <button class="btn bo" id="btnVerProt">Acompanhar este chamado</button>
+    </div>
+  </div>
+
+  <!-- Consultar -->
+  <div id="fConsultar" class="card" style="display:none;">
+    <h2>Consultar protocolo</h2>
+    <div class="f"><label for="cProt">Número do protocolo</label><input type="text" id="cProt" placeholder="Ex.: MAN-2026-0001" style="text-transform:uppercase;font-family:Consolas,monospace;"></div>
+    <button class="btn bp" id="btnConsultar">Consultar</button>
+    <div id="cRes"></div>
+  </div>
+
+  <div class="foot"><button class="lnk" id="btnRestrito">Acesso restrito (manutenção e diretoria)</button></div>
+</div>
+
+<!-- ============ LOGIN ============ -->
+<div id="sLogin" class="sc">
+  <div class="card">
+    <h2>Acesso restrito</h2>
+    <div id="lPasso1">
+      <div class="f"><label for="lCpf">CPF</label><input type="tel" id="lCpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14"></div>
+      <button class="btn bp" id="btnCpf">Continuar</button>
+    </div>
+    <div id="lPasso2" style="display:none;">
+      <p style="margin-bottom:14px;">Olá, <b id="lNome"></b>.</p>
+      <div id="lPrimeiro" class="hint" style="display:none;margin-bottom:14px;background:var(--ybg);color:var(--yellow);padding:10px 12px;border-radius:8px;font-size:.84rem;">Primeiro acesso: defina uma senha de 4 dígitos. Ela será pedida nos próximos acessos.</div>
+      <div class="f"><label for="lSenha" id="lSenhaLbl">Senha</label><input type="password" id="lSenha" inputmode="numeric" maxlength="4" autocomplete="current-password"></div>
+      <div class="f" id="wSenha2" style="display:none;"><label for="lSenha2">Confirme a senha</label><input type="password" id="lSenha2" inputmode="numeric" maxlength="4" autocomplete="new-password"></div>
+      <button class="btn bp" id="btnEntrar">Entrar</button>
+      <div style="text-align:center;margin-top:12px;"><button class="lnk" id="btnTrocaCpf">Usar outro CPF</button></div>
+    </div>
+  </div>
+  <div class="foot"><button class="lnk" id="btnVoltarPub">← Voltar para abertura de chamados</button></div>
+</div>
+
+<!-- ============ ÁREA RESTRITA ============ -->
+<div id="sRes" class="sc wide">
+  <div class="tabs" style="max-width:460px;">
+    <button class="tab on" data-res="rPainel">Painel</button>
+    <button class="tab" data-res="rLista">Chamados</button>
+  </div>
+  <div style="text-align:right;margin:-8px 0 10px;"><button class="lnk" id="btnAtualizar">Atualizar dados</button> <span class="hint" id="atuHora"></span></div>
+
+  <!-- Painel -->
+  <div id="rPainel">
+    <div class="ptop">
+      <span class="lbl">Período (data de abertura):</span>
+      <select id="pPer">
+        <option value="30">Últimos 30 dias</option>
+        <option value="mes">Mês atual</option>
+        <option value="90">Últimos 90 dias</option>
+        <option value="ano">Ano atual</option>
+        <option value="tudo">Todo o histórico</option>
+      </select>
+      <select id="pDest" style="display:none;"></select>
+    </div>
+    <div class="backlog" id="pBacklog"></div>
+    <div class="kpis" id="pKpis"></div>
+    <div class="grid2">
+      <div class="card"><h3>Por status</h3><div class="bars" id="gStatus"></div></div>
+      <div class="card"><h3>Por urgência</h3><div class="bars" id="gUrg"></div></div>
+      <div class="card"><h3>Por categoria</h3><div class="bars" id="gCat"></div></div>
+      <div class="card"><h3>Por local</h3><div class="bars" id="gLocal"></div></div>
+    </div>
+    <div class="card">
+      <h3>Evolução mensal — últimos 6 meses</h3>
+      <div class="leg"><span><i style="background:#c8102e"></i>Abertos no mês</span><span><i style="background:#166534"></i>Resolvidos no mês</span></div>
+      <div class="mes" id="gMes"></div>
+      <div class="mes-lb" id="gMesLb"></div>
+    </div>
+    <div class="card">
+      <h3>Em aberto há mais tempo</h3>
+      <div style="overflow-x:auto"><table class="gt"><thead><tr><th>Protocolo</th><th>Urgência</th><th>Categoria</th><th>Local</th><th>Status</th><th>Aberto há</th></tr></thead><tbody id="gAntigos"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- Lista -->
+  <div id="rLista" style="display:none;">
+    <div class="card" style="padding:16px;">
+      <div class="filtros">
+        <select id="fSt"></select>
+        <select id="fUrg"><option value="">Todas as urgências</option><option>Crítica</option><option>Alta</option><option>Normal</option></select>
+        <select id="fCat"><option value="">Todas as categorias</option></select>
+        <input type="text" id="fBusca" placeholder="Buscar protocolo, local, solicitante…">
+      </div>
+    </div>
+    <div class="cont" id="lCont"></div>
+    <div id="lItens"></div>
+  </div>
+</div>
+
+<!-- Modal detalhe -->
+<div id="modal"><div class="mbox" id="mBox"></div></div>
+<div id="toast"></div>
+
+<script>
+/* ================= CONFIGURAÇÃO ================= */
+var API = 'COLE_AQUI_A_URL_DO_APPS_SCRIPT';
+
+/* ================= UTILITÁRIOS ================= */
+function g(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+var tT;
+function toast(m,d){ var t=g('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(tT); tT=setTimeout(function(){t.classList.remove('on');},d||3200); }
+function carregando(btn,on,txt){ if(on){ btn.dataset.t=btn.innerHTML; btn.innerHTML='<span class="spin"></span>'+(txt||'Aguarde…'); btn.disabled=true; } else { btn.innerHTML=btn.dataset.t||btn.innerHTML; btn.disabled=false; } }
+function apiGet(params){
+  var q=Object.keys(params).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k]);}).join('&');
+  return fetch(API+'?'+q).then(function(r){return r.json();});
+}
+function apiPost(body){
+  return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(function(r){return r.json();});
+}
+function falhaRede(e){ console.error(e); toast('Falha de conexão. Verifique a internet e tente novamente.'); }
+function fData(iso,soData){ if(!iso) return '—'; var d=new Date(iso); if(isNaN(d)) return '—';
+  var o={day:'2-digit',month:'2-digit',year:'numeric'}; if(!soData){o.hour='2-digit';o.minute='2-digit';}
+  return d.toLocaleString('pt-BR',o); }
+function fDur(h){ if(h==null||isNaN(h)) return '—'; if(h<1) return Math.max(1,Math.round(h*60))+' min'; if(h<24) return Math.round(h)+' h';
+  var d=Math.floor(h/24), r=Math.round(h%24); if(r===24){d++;r=0;} return d+'d'+(r?' '+r+'h':''); }
+function horasEntre(a,b){ return (new Date(b)-new Date(a))/36e5; }
+function stClasse(s){ return 'st-'+String(s).split(' ')[0].split('/')[0]; }
+function chipSt(s){ return '<span class="chip '+stClasse(s)+'">'+esc(s)+'</span>'; }
+function chipUr(u){ return '<span class="chip ur-'+esc(u)+'">'+esc(u)+'</span>'; }
+function ss(k,v){ try{ if(v===undefined) return sessionStorage.getItem(k); if(v===null) sessionStorage.removeItem(k); else sessionStorage.setItem(k,v);}catch(e){ return null; } }
+function mostrar(id){ ['sPub','sLogin','sRes'].forEach(function(s){ g(s).classList.toggle('on',s===id); }); window.scrollTo(0,0); }
+
+/* ================= ÁREA PÚBLICA ================= */
+var OP=null;
+document.querySelectorAll('[data-pub]').forEach(function(b){
+  b.addEventListener('click',function(){ abaPub(b.dataset.pub); });
+});
+function abaPub(id){
+  document.querySelectorAll('[data-pub]').forEach(function(x){ x.classList.toggle('on',x.dataset.pub===id); });
+  g('fAbrir').style.display = id==='fAbrir' ? '' : 'none';
+  g('fOk').style.display = 'none';
+  g('fConsultar').style.display = id==='fConsultar' ? '' : 'none';
+}
+
+function preencher(sel,lista,ph){
+  sel.innerHTML=(ph?'<option value="">'+esc(ph)+'</option>':'')+lista.map(function(v){return '<option>'+esc(v)+'</option>';}).join('');
+}
+function carregarOpcoes(){
+  apiGet({acao:'opcoes'}).then(function(r){
+    g('carregandoOp').style.display='none';
+    if(!r.ok){ toast(r.erro||'Erro ao carregar opções.'); return; }
+    OP=r;
+    preencher(g('aSetor'),r.setores,'Selecione…');
+    preencher(g('aLocal'),r.setores,'Selecione…');
+    preencher(g('aDestino'),r.destinos,r.destinos.length>1?'Selecione…':'');
+    g('wDestino').style.display = r.destinos.length>1 ? '' : 'none';
+    atualizarCats();
+  }).catch(function(e){ g('carregandoOp').innerHTML='Não foi possível carregar. <button class="lnk" onclick="location.reload()">Tentar novamente</button>'; falhaRede(e); });
+}
+function atualizarCats(){
+  var d=g('aDestino').value; var cats=(OP&&OP.categorias[d])||[];
+  preencher(g('aCat'),cats,'Selecione…');
+}
+g('aDestino').addEventListener('change',atualizarCats);
+
+/* Foto: reduzida no aparelho antes do envio */
+var FOTO=null;
+g('btnFoto').addEventListener('click',function(){ g('aFoto').click(); });
+g('btnFotoRm').addEventListener('click',limparFoto);
+function limparFoto(){ FOTO=null; g('aFoto').value=''; g('aFotoPrev').style.display='none'; g('btnFotoRm').style.display='none'; g('btnFoto').textContent='Adicionar foto'; }
+g('aFoto').addEventListener('change',function(){
+  var f=this.files&&this.files[0]; if(!f) return;
+  if(!/^image\//.test(f.type)){ toast('Selecione um arquivo de imagem.'); return; }
+  var rd=new FileReader();
+  rd.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      var max=1280, w=img.width, h=img.height, k=Math.min(1,max/Math.max(w,h));
+      var cv=document.createElement('canvas'); cv.width=Math.round(w*k); cv.height=Math.round(h*k);
+      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+      var url=cv.toDataURL('image/jpeg',0.72);
+      FOTO={mime:'image/jpeg',b64:url.split(',')[1]};
+      g('aFotoPrev').src=url; g('aFotoPrev').style.display='block';
+      g('btnFotoRm').style.display='inline'; g('btnFoto').textContent='Trocar foto';
+    };
+    img.onerror=function(){ toast('Não foi possível ler esta imagem.'); };
+    img.src=rd.result;
+  };
+  rd.readAsDataURL(f);
+});
+
+g('btnAbrir').addEventListener('click',function(){
+  var btn=this;
+  ['aNome','aSetor','aLocal','aCat','aDesc','aDestino'].forEach(function(i){ g(i).classList.remove('erro'); });
+  g('aUrg').classList.remove('erro');
+  var urg=document.querySelector('input[name=urg]:checked');
+  var d={acao:'abrir',nome:g('aNome').value.trim(),setor:g('aSetor').value,destino:g('aDestino').value,
+    local:g('aLocal').value,detalheLocal:g('aDetalhe').value.trim(),categoria:g('aCat').value,
+    urgencia:urg?urg.value:'',descricao:g('aDesc').value.trim(),foto:FOTO};
+  var falt=[];
+  if(d.nome.length<3){ g('aNome').classList.add('erro'); falt.push('nome'); }
+  if(!d.setor){ g('aSetor').classList.add('erro'); falt.push('setor'); }
+  if(!d.destino){ g('aDestino').classList.add('erro'); falt.push('área responsável'); }
+  if(!d.local){ g('aLocal').classList.add('erro'); falt.push('local'); }
+  if(!d.categoria){ g('aCat').classList.add('erro'); falt.push('categoria'); }
+  if(!d.urgencia){ g('aUrg').classList.add('erro'); falt.push('urgência'); }
+  if(d.descricao.length<10){ g('aDesc').classList.add('erro'); falt.push('descrição'); }
+  if(falt.length){ toast('Preencha: '+falt.join(', ')+'.'); return; }
+  carregando(btn,true,'Enviando…');
+  apiPost(d).then(function(r){
+    carregando(btn,false);
+    if(!r.ok){ toast(r.erro||'Erro ao registrar.'); return; }
+    g('okProt').textContent=r.protocolo;
+    g('fAbrir').style.display='none'; g('fOk').style.display='';
+    ['aNome','aDetalhe','aDesc'].forEach(function(i){ g(i).value=''; });
+    g('aLocal').value=''; g('aCat').value='';
+    if(urg) urg.checked=false; limparFoto();
+    window.scrollTo(0,0);
+  }).catch(function(e){ carregando(btn,false); falhaRede(e); });
+});
+['aNome','aSetor','aLocal','aCat','aDesc','aDestino'].forEach(function(i){
+  ['input','change'].forEach(function(ev){ g(i).addEventListener(ev,function(){ this.classList.remove('erro'); }); });
+});
+document.querySelectorAll('input[name=urg]').forEach(function(r){ r.addEventListener('change',function(){ g('aUrg').classList.remove('erro'); }); });
+g('btnNovo').addEventListener('click',function(){ abaPub('fAbrir'); });
+g('btnVerProt').addEventListener('click',function(){ g('cProt').value=g('okProt').textContent; abaPub('fConsultar'); g('btnConsultar').click(); });
+g('btnCopiar').addEventListener('click',function(){
+  var p=g('okProt').textContent;
+  try{ navigator.clipboard.writeText(p).then(function(){toast('Protocolo copiado.');},function(){toast('Anote: '+p);}); }catch(e){ toast('Anote: '+p); }
+});
+
+g('cProt').addEventListener('keydown',function(e){ if(e.key==='Enter') g('btnConsultar').click(); });
+g('btnConsultar').addEventListener('click',function(){
+  var btn=this, p=g('cProt').value.trim().toUpperCase();
+  if(!p){ toast('Informe o protocolo.'); return; }
+  carregando(btn,true,'Consultando…'); g('cRes').innerHTML='';
+  apiGet({acao:'consultar',protocolo:p}).then(function(r){
+    carregando(btn,false);
+    if(!r.ok){ g('cRes').innerHTML='<p class="vazio" style="padding:20px 0 0;">'+esc(r.erro)+'</p>'; return; }
+    var c=r.chamado;
+    var h='<div class="msec"><div class="it-top"><span class="it-prot">'+esc(c.protocolo)+'</span>'+chipSt(c.status)+chipUr(c.urgencia)+'</div>';
+    h+='<dl class="kv" style="margin-top:12px;"><dt>Aberto em</dt><dd>'+fData(c.dataAbertura)+'</dd>';
+    h+='<dt>Local</dt><dd>'+esc(c.local)+(c.detalheLocal?' — '+esc(c.detalheLocal):'')+'</dd>';
+    h+='<dt>Categoria</dt><dd>'+esc(c.categoria)+'</dd>';
+    h+='<dt>Descrição</dt><dd style="white-space:pre-wrap">'+esc(c.descricao)+'</dd>';
+    if(c.status==='Resolvido'||c.status==='Cancelado'){
+      h+='<dt>'+(c.status==='Resolvido'?'Resolvido em':'Cancelado em')+'</dt><dd>'+fData(c.dataResolucao)+'</dd>';
+      h+='<dt>'+(c.status==='Resolvido'?'O que foi feito':'Motivo')+'</dt><dd style="white-space:pre-wrap">'+esc(c.resolucao)+'</dd>';
+    }
+    h+='</dl><h4 style="font-size:.85rem;margin:18px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">Andamento</h4><ul class="tl">';
+    r.historico.forEach(function(x){ h+='<li><b>'+esc(x.status)+'</b><small>'+fData(x.dataHora)+'</small></li>'; });
+    h+='</ul></div>';
+    g('cRes').innerHTML=h;
+  }).catch(function(e){ carregando(btn,false); falhaRede(e); });
+});
+
+/* ================= LOGIN ================= */
+var CPF='', PRIMEIRO=false;
+g('btnRestrito').addEventListener('click',function(){
+  if(ss('fp_tok')){ entrarRestrito(); return; }
+  mostrar('sLogin'); resetLogin(); g('lCpf').focus();
+});
+g('btnVoltarPub').addEventListener('click',function(){ mostrar('sPub'); });
+g('btnTrocaCpf').addEventListener('click',resetLogin);
+function resetLogin(){ g('lPasso1').style.display=''; g('lPasso2').style.display='none'; g('lCpf').value=''; g('lSenha').value=''; g('lSenha2').value=''; }
+g('lCpf').addEventListener('input',function(){
+  var v=this.value.replace(/\D/g,'').slice(0,11);
+  if(v.length>9) v=v.slice(0,3)+'.'+v.slice(3,6)+'.'+v.slice(6,9)+'-'+v.slice(9);
+  else if(v.length>6) v=v.slice(0,3)+'.'+v.slice(3,6)+'.'+v.slice(6);
+  else if(v.length>3) v=v.slice(0,3)+'.'+v.slice(3);
+  this.value=v;
+});
+g('lCpf').addEventListener('keydown',function(e){ if(e.key==='Enter') g('btnCpf').click(); });
+['lSenha','lSenha2'].forEach(function(i){
+  g(i).addEventListener('input',function(){ this.value=this.value.replace(/\D/g,'').slice(0,4); });
+  g(i).addEventListener('keydown',function(e){ if(e.key==='Enter') g('btnEntrar').click(); });
+});
+g('btnCpf').addEventListener('click',function(){
+  var btn=this; CPF=g('lCpf').value.replace(/\D/g,'');
+  if(CPF.length!==11){ toast('Informe um CPF com 11 dígitos.'); return; }
+  carregando(btn,true);
+  apiPost({acao:'verificarCpf',cpf:CPF}).then(function(r){
+    carregando(btn,false);
+    if(!r.ok){ toast(r.erro); return; }
+    PRIMEIRO=!r.temSenha;
+    g('lNome').textContent=r.nome;
+    g('lPrimeiro').style.display=PRIMEIRO?'':'none';
+    g('wSenha2').style.display=PRIMEIRO?'':'none';
+    g('lSenhaLbl').textContent=PRIMEIRO?'Nova senha (4 dígitos)':'Senha';
+    g('btnEntrar').textContent=PRIMEIRO?'Definir senha e entrar':'Entrar';
+    g('lPasso1').style.display='none'; g('lPasso2').style.display='';
+    g('lSenha').focus();
+  }).catch(function(e){ carregando(btn,false); falhaRede(e); });
+});
+g('btnEntrar').addEventListener('click',function(){
+  var btn=this, s=g('lSenha').value;
+  if(!/^\d{4}$/.test(s)){ toast('A senha tem 4 dígitos.'); return; }
+  if(PRIMEIRO && s!==g('lSenha2').value){ toast('As senhas não conferem.'); return; }
+  carregando(btn,true);
+  apiPost({acao:PRIMEIRO?'definirSenha':'login',cpf:CPF,senha:s}).then(function(r){
+    carregando(btn,false);
+    if(!r.ok){ toast(r.erro); g('lSenha').value=''; return; }
+    ss('fp_tok',r.token); ss('fp_usu',JSON.stringify(r.usuario));
+    resetLogin(); entrarRestrito();
+  }).catch(function(e){ carregando(btn,false); falhaRede(e); });
+});
+g('btnSair').addEventListener('click',function(){
+  var t=ss('fp_tok'); if(t) apiPost({acao:'sair',token:t}).catch(function(){});
+  sair();
+});
+function sair(msg){ ss('fp_tok',null); ss('fp_usu',null); USU=null; DADOS=[]; g('hu').style.display='none'; mostrar('sPub'); if(msg) toast(msg); }
+
+/* ================= ÁREA RESTRITA ================= */
+var USU=null, DADOS=[], SLA={'Crítica':24,'Alta':72,'Normal':168}, STATUS=['Aberto','Em andamento','Aguardando material/terceiro','Resolvido','Cancelado'];
+var ABERTOS=['Aberto','Em andamento','Aguardando material/terceiro'];
+var RANK_U={'Crítica':0,'Alta':1,'Normal':2};
+
+document.querySelectorAll('[data-res]').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('[data-res]').forEach(function(x){ x.classList.toggle('on',x===b); });
+    g('rPainel').style.display=b.dataset.res==='rPainel'?'':'none';
+    g('rLista').style.display=b.dataset.res==='rLista'?'':'none';
+  });
+});
+function entrarRestrito(){
+  try{ USU=JSON.parse(ss('fp_usu')); }catch(e){ USU=null; }
+  if(!USU){ sair(); return; }
+  g('huNome').textContent=USU.nome+(USU.podeEditar?'':' · visualização');
+  g('hu').style.display='flex';
+  document.querySelector('[data-res=rPainel]').click();
+  mostrar('sRes'); carregarDados();
+}
+g('btnAtualizar').addEventListener('click',carregarDados);
+function carregarDados(){
+  g('atuHora').innerHTML='<span class="spin dk" style="width:12px;height:12px;border-width:2px"></span>carregando…';
+  apiPost({acao:'listar',token:ss('fp_tok')}).then(function(r){
+    if(r.sessaoExpirada){ sair('Sessão expirada. Entre novamente.'); return; }
+    if(!r.ok){ toast(r.erro); return; }
+    DADOS=r.chamados; SLA=r.sla||SLA; STATUS=r.status||STATUS;
+    g('atuHora').textContent='atualizado às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    montarFiltros(); renderPainel(); renderLista();
+  }).catch(function(e){ g('atuHora').textContent=''; falhaRede(e); });
+}
+
+function prazo(c){ return new Date(new Date(c.dataAbertura).getTime()+(SLA[c.urgencia]||168)*36e5); }
+function atrasado(c){
+  if(c.status==='Cancelado') return false;
+  if(c.status==='Resolvido') return new Date(c.dataResolucao)>prazo(c);
+  return new Date()>prazo(c);
+}
+
+/* ---------- Lista ---------- */
+var filtrosMontados=false;
+function montarFiltros(){
+  var st=g('fSt'), atual=st.value||'__abertos';
+  st.innerHTML='<option value="__abertos">Em aberto (todos)</option>'+STATUS.map(function(s){return '<option>'+esc(s)+'</option>';}).join('')+'<option value="">Todos os status</option>';
+  st.value=atual;
+  var cats={}; DADOS.forEach(function(c){ cats[c.categoria]=1; });
+  var fc=g('fCat'), cAtual=fc.value;
+  fc.innerHTML='<option value="">Todas as categorias</option>'+Object.keys(cats).sort().map(function(c){return '<option>'+esc(c)+'</option>';}).join('');
+  fc.value=cAtual;
+  var dest={}; DADOS.forEach(function(c){ dest[c.areaDestino]=1; });
+  var ds=Object.keys(dest);
+  if(USU.area==='*' && ds.length>1){
+    var pd=g('pDest'), dAt=pd.value; pd.style.display='';
+    pd.innerHTML='<option value="">Todas as áreas</option>'+ds.map(function(d){return '<option>'+esc(d)+'</option>';}).join('');
+    pd.value=dAt;
+  }
+  if(!filtrosMontados){
+    ['fSt','fUrg','fCat'].forEach(function(i){ g(i).addEventListener('change',renderLista); });
+    g('fBusca').addEventListener('input',renderLista);
+    g('pPer').addEventListener('change',renderPainel);
+    g('pDest').addEventListener('change',function(){ renderPainel(); renderLista(); });
+    filtrosMontados=true;
+  }
+}
+function renderLista(){
+  var st=g('fSt').value, u=g('fUrg').value, ca=g('fCat').value, b=g('fBusca').value.trim().toLowerCase(), dd=g('pDest').value;
+  var l=DADOS.filter(function(c){
+    if(st==='__abertos' && ABERTOS.indexOf(c.status)<0) return false;
+    if(st && st!=='__abertos' && c.status!==st) return false;
+    if(u && c.urgencia!==u) return false;
+    if(ca && c.categoria!==ca) return false;
+    if(dd && c.areaDestino!==dd) return false;
+    if(b && (c.protocolo+' '+c.local+' '+c.detalheLocal+' '+c.solicitante+' '+c.setorSolicitante+' '+c.descricao+' '+c.categoria).toLowerCase().indexOf(b)<0) return false;
+    return true;
+  });
+  var abertosView = st==='__abertos' || ABERTOS.indexOf(st)>=0;
+  l.sort(function(a,b2){
+    if(abertosView){ var r=RANK_U[a.urgencia]-RANK_U[b2.urgencia]; if(r) return r; return new Date(a.dataAbertura)-new Date(b2.dataAbertura); }
+    return new Date(b2.dataAbertura)-new Date(a.dataAbertura);
+  });
+  g('lCont').textContent=l.length+' chamado'+(l.length===1?'':'s')+(abertosView?' · ordenados por urgência e antiguidade':' · mais recentes primeiro');
+  if(!l.length){ g('lItens').innerHTML='<div class="card vazio">Nenhum chamado com esses filtros.</div>'; return; }
+  g('lItens').innerHTML=l.map(function(c){
+    var fim=(c.status==='Resolvido'||c.status==='Cancelado');
+    var idade=fim?'resolvido em '+fDur(horasEntre(c.dataAbertura,c.dataResolucao)):'aberto há '+fDur(horasEntre(c.dataAbertura,new Date()));
+    if(c.status==='Cancelado') idade='cancelado';
+    return '<div class="it u-'+esc(c.urgencia)+'" data-p="'+esc(c.protocolo)+'">'+
+      '<div class="it-top"><span class="it-prot">'+esc(c.protocolo)+'</span>'+chipUr(c.urgencia)+chipSt(c.status)+
+      (atrasado(c)?'<span class="chip atr">Fora do prazo</span>':'')+(c.temFoto?'<span class="chip" style="background:#f1f5f9;color:#374151">📷 foto</span>':'')+
+      '<span class="it-age">'+idade+'</span></div>'+
+      '<div class="it-desc">'+esc(c.descricao)+'</div>'+
+      '<div class="it-meta">'+esc(c.categoria)+' · '+esc(c.local)+(c.detalheLocal?' ('+esc(c.detalheLocal)+')':'')+' · por '+esc(c.solicitante)+' — '+esc(c.setorSolicitante)+' · '+fData(c.dataAbertura)+'</div></div>';
+  }).join('');
+  g('lItens').querySelectorAll('.it').forEach(function(el){ el.addEventListener('click',function(){ abrirDetalhe(el.dataset.p); }); });
+}
+
+/* ---------- Detalhe / atualização ---------- */
+function acharC(p){ for(var i=0;i<DADOS.length;i++) if(DADOS[i].protocolo===p) return DADOS[i]; return null; }
+function abrirDetalhe(p){
+  var c=acharC(p); if(!c) return;
+  var h='<button class="mclose" id="mX" aria-label="Fechar">×</button>';
+  h+='<div class="it-top" style="padding-right:30px"><span class="it-prot" style="font-size:1.15rem">'+esc(c.protocolo)+'</span>'+chipUr(c.urgencia)+chipSt(c.status)+(atrasado(c)?'<span class="chip atr">Fora do prazo</span>':'')+'</div>';
+  h+='<dl class="kv" style="margin-top:14px;">';
+  h+='<dt>Solicitante</dt><dd>'+esc(c.solicitante)+' — '+esc(c.setorSolicitante)+'</dd>';
+  h+='<dt>Local</dt><dd>'+esc(c.local)+(c.detalheLocal?' — '+esc(c.detalheLocal):'')+'</dd>';
+  h+='<dt>Categoria</dt><dd>'+esc(c.categoria)+(USU.area==='*'?' · '+esc(c.areaDestino):'')+'</dd>';
+  h+='<dt>Aberto em</dt><dd>'+fData(c.dataAbertura)+'</dd>';
+  h+='<dt>Prazo-alvo</dt><dd>'+fData(prazo(c).toISOString())+' <span class="hint">('+SLA[c.urgencia]+' h)</span></dd>';
+  if(c.dataInicio) h+='<dt>Início do atendimento</dt><dd>'+fData(c.dataInicio)+'</dd>';
+  if(c.dataResolucao) h+='<dt>Encerrado em</dt><dd>'+fData(c.dataResolucao)+' <span class="hint">('+fDur(horasEntre(c.dataAbertura,c.dataResolucao))+')</span></dd>';
+  h+='</dl>';
+  h+='<div class="msec"><h4>Descrição</h4><div class="desc-box">'+esc(c.descricao)+'</div>';
+  if(c.temFoto) h+='<div id="mFoto" style="margin-top:12px;"><button class="btn bo sm" id="mBtnFoto">Ver foto</button></div>';
+  h+='</div>';
+  if(c.resolucao) h+='<div class="msec"><h4>'+(c.status==='Cancelado'?'Motivo do cancelamento':'Resolução')+'</h4><div class="desc-box">'+esc(c.resolucao)+'</div></div>';
+  if(USU.podeEditar){
+    h+='<div class="msec"><h4>Atualizar chamado</h4><div class="upd">';
+    h+='<div class="f"><label for="mSt">Novo status</label><select id="mSt">'+STATUS.map(function(s){return '<option'+(s===c.status?' selected':'')+'>'+esc(s)+'</option>';}).join('')+'</select></div>';
+    h+='<div class="f" style="margin-bottom:10px"><label for="mCm" id="mCmLbl">Comentário</label><textarea id="mCm" maxlength="2000" style="min-height:80px"></textarea><div class="hint" id="mCmHint"></div></div>';
+    h+='<button class="btn bp" id="mSalvar">Salvar atualização</button></div></div>';
+  }
+  h+='<div class="msec"><h4>Histórico</h4><div id="mHist"><span class="spin dk"></span></div></div>';
+  g('mBox').innerHTML=h; g('modal').classList.add('on'); document.body.style.overflow='hidden';
+  g('mX').addEventListener('click',fecharModal);
+  if(c.temFoto) g('mBtnFoto').addEventListener('click',function(){ verFoto(c.protocolo,this); });
+  if(USU.podeEditar){ g('mSt').addEventListener('change',rotuloCm); rotuloCm(); g('mSalvar').addEventListener('click',function(){ salvar(c.protocolo,this); }); }
+  apiPost({acao:'historico',token:ss('fp_tok'),protocolo:c.protocolo}).then(function(r){
+    if(r.sessaoExpirada){ fecharModal(); sair('Sessão expirada. Entre novamente.'); return; }
+    if(!r.ok){ g('mHist').textContent=r.erro; return; }
+    g('mHist').innerHTML='<ul class="tl">'+r.historico.slice().reverse().map(function(x){
+      return '<li><b>'+(x.de?esc(x.de)+' → ':'')+esc(x.para)+'</b><small>'+fData(x.dataHora)+' · '+esc(x.usuario)+'</small>'+(x.comentario&&x.comentario!=='Chamado aberto'?'<div class="cm">'+esc(x.comentario)+'</div>':'')+'</li>';
+    }).join('')+'</ul>';
+  }).catch(function(e){ g('mHist').textContent='Não foi possível carregar.'; console.error(e); });
+}
+function rotuloCm(){
+  var s=g('mSt').value, l='Comentário', hnt='Opcional.';
+  if(s==='Resolvido'){ l='O que foi feito *'; hnt='Obrigatório. Aparece para o solicitante na consulta do protocolo.'; }
+  else if(s==='Cancelado'){ l='Motivo do cancelamento *'; hnt='Obrigatório. Ex.: chamado duplicado, não procede.'; }
+  else if(s==='Aguardando material/terceiro'){ l='O que está sendo aguardado *'; hnt='Obrigatório. Ex.: peça encomendada, visita do técnico.'; }
+  g('mCmLbl').textContent=l; g('mCmHint').textContent=hnt;
+}
+function salvar(p,btn){
+  var s=g('mSt').value, cm=g('mCm').value.trim();
+  var obrig=(s==='Resolvido'||s==='Cancelado'||s==='Aguardando material/terceiro');
+  if(obrig && cm.length<5){ g('mCm').classList.add('erro'); toast('Preencha o campo obrigatório.'); return; }
+  carregando(btn,true,'Salvando…');
+  apiPost({acao:'atualizar',token:ss('fp_tok'),protocolo:p,status:s,comentario:cm}).then(function(r){
+    carregando(btn,false);
+    if(r.sessaoExpirada){ fecharModal(); sair('Sessão expirada. Entre novamente.'); return; }
+    if(!r.ok){ toast(r.erro); return; }
+    for(var i=0;i<DADOS.length;i++) if(DADOS[i].protocolo===p) DADOS[i]=r.chamado;
+    toast('Chamado '+p+' atualizado.');
+    renderPainel(); renderLista(); abrirDetalhe(p);
+  }).catch(function(e){ carregando(btn,false); falhaRede(e); });
+}
+function verFoto(p,btn){
+  carregando(btn,true,'Carregando…');
+  apiPost({acao:'foto',token:ss('fp_tok'),protocolo:p}).then(function(r){
+    if(!r.ok){ carregando(btn,false); toast(r.erro); return; }
+    g('mFoto').innerHTML='<img alt="Foto do chamado" src="data:'+esc(r.mime)+';base64,'+r.b64+'">';
+  }).catch(function(e){ carregando(btn,false); falhaRede(e); });
+}
+function fecharModal(){ g('modal').classList.remove('on'); document.body.style.overflow=''; }
+g('modal').addEventListener('click',function(e){ if(e.target===this) fecharModal(); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') fecharModal(); });
+
+/* ---------- Painel ---------- */
+function noPeriodo(c,per){
+  var d=new Date(c.dataAbertura), h=new Date();
+  if(per==='tudo') return true;
+  if(per==='mes') return d.getFullYear()===h.getFullYear() && d.getMonth()===h.getMonth();
+  if(per==='ano') return d.getFullYear()===h.getFullYear();
+  return (h-d)/864e5 <= Number(per);
+}
+function contar(lista,campo,ordem){
+  var m={}; lista.forEach(function(c){ m[c[campo]]=(m[c[campo]]||0)+1; });
+  var ks=ordem?ordem.filter(function(k){return m[k];}):Object.keys(m).sort(function(a,b){return m[b]-m[a];});
+  return ks.map(function(k){ return [k,m[k]]; });
+}
+function barras(id,pares,limite,corFn){
+  var el=g(id);
+  if(!pares.length){ el.innerHTML='<div class="hint">Sem chamados no período.</div>'; return; }
+  var resto=0; if(limite && pares.length>limite){ pares.slice(limite).forEach(function(p){resto+=p[1];}); pares=pares.slice(0,limite).concat([['Outros locais',resto]]); }
+  var max=Math.max.apply(null,pares.map(function(p){return p[1];}));
+  el.innerHTML=pares.map(function(p){
+    var cor=corFn?corFn(p[0]):'var(--primary)';
+    return '<div class="bar"><span class="n" title="'+esc(p[0])+'">'+esc(p[0])+'</span><div class="tr"><div class="fl" style="width:'+(p[1]/max*100)+'%;background:'+cor+'"></div></div><span class="q">'+p[1]+'</span></div>';
+  }).join('');
+}
+var COR_ST={'Aberto':'#6b7280','Em andamento':'#ca8a04','Aguardando material/terceiro':'#f97316','Resolvido':'#166534','Cancelado':'#cbd5e1'};
+var COR_UR={'Crítica':'#c8102e','Alta':'#f97316','Normal':'#9ca3af'};
+function renderPainel(){
+  var per=g('pPer').value, dd=g('pDest').value;
+  var base=DADOS.filter(function(c){ return !dd || c.areaDestino===dd; });
+  var L=base.filter(function(c){ return noPeriodo(c,per); });
+
+  // Backlog atual (independe do período)
+  var bk=base.filter(function(c){ return ABERTOS.indexOf(c.status)>=0; });
+  var bkCrit=bk.filter(function(c){return c.urgencia==='Crítica';}).length;
+  var bkAtr=bk.filter(atrasado).length;
+  var bkAg=bk.filter(function(c){return c.status==='Aguardando material/terceiro';}).length;
+  g('pBacklog').innerHTML='<span class="t">Situação atual · todos os períodos</span>'+
+    '<span><b>'+bk.length+'</b>em aberto</span><span class="crit"><b>'+bkCrit+'</b>críticos</span>'+
+    '<span class="crit"><b>'+bkAtr+'</b>fora do prazo</span><span><b>'+bkAg+'</b>aguardando material/terceiro</span>';
+
+  var res=L.filter(function(c){return c.status==='Resolvido';});
+  var abe=L.filter(function(c){return ABERTOS.indexOf(c.status)>=0;});
+  var canc=L.filter(function(c){return c.status==='Cancelado';});
+  var tm=res.length?res.reduce(function(s,c){return s+horasEntre(c.dataAbertura,c.dataResolucao);},0)/res.length:null;
+  var noPrazo=res.filter(function(c){return !atrasado(c);}).length;
+  var pct=res.length?Math.round(noPrazo/res.length*100):null;
+  var k=[
+    ['Chamados no período',L.length,'','pri'],
+    ['Em aberto',abe.length,L.length?Math.round(abe.length/L.length*100)+'% do período':'',''],
+    ['Resolvidos',res.length,L.length?Math.round(res.length/L.length*100)+'% do período':'','ok'],
+    ['Cancelados',canc.length,'',''],
+    ['Tempo médio de resolução',fDur(tm),res.length?'base: '+res.length+' resolvido'+(res.length>1?'s':''):'sem resolvidos',''],
+    ['Resolvidos no prazo',pct==null?'—':pct+'%',res.length?noPrazo+' de '+res.length:'',pct!=null&&pct>=80?'ok':'pri']
+  ];
+  g('pKpis').innerHTML=k.map(function(x){ return '<div class="kpi '+x[3]+'"><div class="v">'+x[1]+'</div><div class="l">'+x[0]+'</div>'+(x[2]?'<div class="s">'+x[2]+'</div>':'')+'</div>'; }).join('');
+
+  barras('gStatus',contar(L,'status',STATUS),0,function(k){return COR_ST[k];});
+  barras('gUrg',contar(L,'urgencia',['Crítica','Alta','Normal']),0,function(k){return COR_UR[k];});
+  barras('gCat',contar(L,'categoria'),0);
+  barras('gLocal',contar(L,'local'),8);
+
+  // Mensal (independe do filtro de período)
+  var meses=[], hoje=new Date();
+  for(var i=5;i>=0;i--){ var d=new Date(hoje.getFullYear(),hoje.getMonth()-i,1); meses.push({y:d.getFullYear(),m:d.getMonth(),a:0,r:0}); }
+  base.forEach(function(c){
+    var a=new Date(c.dataAbertura);
+    meses.forEach(function(x){ if(a.getFullYear()===x.y&&a.getMonth()===x.m) x.a++; });
+    if(c.status==='Resolvido'&&c.dataResolucao){ var r=new Date(c.dataResolucao); meses.forEach(function(x){ if(r.getFullYear()===x.y&&r.getMonth()===x.m) x.r++; }); }
+  });
+  var mx=Math.max(1,Math.max.apply(null,meses.map(function(x){return Math.max(x.a,x.r);})));
+  var nm=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  g('gMes').innerHTML=meses.map(function(x){
+    return '<div class="g"><div class="cols">'+
+      '<div class="c" style="height:'+(x.a/mx*85)+'%;background:#c8102e" title="Abertos: '+x.a+'"><i>'+x.a+'</i></div>'+
+      '<div class="c" style="height:'+(x.r/mx*85)+'%;background:#166534" title="Resolvidos: '+x.r+'"><i>'+x.r+'</i></div></div></div>';
+  }).join('');
+  g('gMesLb').innerHTML=meses.map(function(x){ return '<span>'+nm[x.m]+'/'+String(x.y).slice(2)+'</span>'; }).join('');
+
+  // Mais antigos em aberto
+  var ant=bk.slice().sort(function(a,b){return new Date(a.dataAbertura)-new Date(b.dataAbertura);}).slice(0,8);
+  g('gAntigos').innerHTML=ant.length?ant.map(function(c){
+    return '<tr data-p="'+esc(c.protocolo)+'"><td style="font-family:Consolas,monospace;font-weight:700">'+esc(c.protocolo)+'</td><td>'+chipUr(c.urgencia)+'</td><td>'+esc(c.categoria)+'</td><td>'+esc(c.local)+'</td><td>'+chipSt(c.status)+'</td><td'+(atrasado(c)?' style="color:var(--red);font-weight:700"':'')+'>'+fDur(horasEntre(c.dataAbertura,new Date()))+'</td></tr>';
+  }).join(''):'<tr><td colspan="6" class="vazio" style="padding:20px">Nenhum chamado em aberto.</td></tr>';
+  g('gAntigos').querySelectorAll('tr[data-p]').forEach(function(tr){ tr.addEventListener('click',function(){ abrirDetalhe(tr.dataset.p); }); });
+}
+
+/* ================= INÍCIO ================= */
+carregarOpcoes();
+if(ss('fp_tok')) entrarRestrito();
+</script>
+</body>
+</html>
